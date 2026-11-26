@@ -3,52 +3,106 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Concours TikTok</title>
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #101010;
-  color: white;
-  text-align: center;
-}
-header {
-  background: #171717;
-  padding: 25px;
-  font-size: 25px;
-  font-weight: bold;
-}
-main {
-  padding: 30px 20px;
-}
-h1 { color: #ff3158; }
-button {
-  background: #ff3158;
-  color: white;
-  border: 0;
-  padding: 15px 25px;
-  border-radius: 10px;
-  font-size: 18px;
-}
-.box {
-  background: #202020;
-  padding: 25px;
-  border-radius: 15px;
-  margin-top: 25px;
-}
+*{box-sizing:border-box}
+body{margin:0;background:#090909;color:#f5f0df;font-family:Arial,sans-serif;text-align:center}
+header{padding:25px 15px;border-bottom:1px solid #b99a50;color:#d9bd72;font-size:23px;font-weight:bold;letter-spacing:2px}
+main{max-width:520px;margin:35px auto;padding:20px}
+h1{color:#d9bd72;font-size:34px}
+.gold{color:#d9bd72}
+.card{background:#171717;border:1px solid #9e8040;border-radius:16px;padding:24px;margin:24px 0}
+.prize{font-size:25px;color:#e4c879;font-weight:bold}
+input{width:100%;padding:15px;margin:9px 0;background:#242424;border:1px solid #75633c;border-radius:8px;color:white;font-size:16px}
+label{display:block;text-align:left;font-size:13px;line-height:1.5;margin:14px 0}
+button{width:100%;padding:16px;background:#d5b568;color:#111;border:0;border-radius:9px;font-size:17px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+#message{margin-top:18px;line-height:1.5}
+small{color:#aaa;line-height:1.5}
 </style>
 </head>
 <body>
-<header>🎁 CONCOURS TIKTOK</header>
+<header>CONCOURS TIKTOK</header>
 <main>
-<h1>Bienvenue au concours !</h1>
-<p>Participez à notre concours et tentez votre chance !</p>
-<div class="box">
-<h2>🏆 Grand concours</h2>
-<p>Découvrez notre jeu concours.</p>
-<p>Bonne chance à tous !</p>
+<h1>GRAND CONCOURS</h1>
+<p>Participe et tente ta chance !</p>
+
+<div class="card">
+<p class="gold">À GAGNER</p>
+<div class="prize">450 € OU une casquette Louis Vuitton</div>
+<p><small>Fin des inscriptions : 1er décembre 2026</small></p>
 </div>
+
+<div class="card">
+<h2 class="gold">Participer au concours</h2>
+<form id="contestForm">
+<input id="name" type="text" placeholder="Ton prénom et nom" required>
+<input id="email" type="email" placeholder="Ton adresse e-mail" required>
+<input id="tiktok" type="text" placeholder="Ton pseudo TikTok (@...)" required>
+
+<label>
+<input id="consent" type="checkbox" required style="width:auto">
+J'accepte que mes données soient utilisées pour gérer ma participation au concours et confirme avoir lu les informations de confidentialité.
+</label>
+
+<button id="submit" type="submit">PARTICIPER</button>
+</form>
+<div id="message" role="status"></div>
+</div>
+
+<p><small>Le tirage au sort sera effectué manuellement par l'organisateur après la clôture des inscriptions. Concours indépendant, non sponsorisé ni organisé par TikTok ou Louis Vuitton.</small></p>
 </main>
+
+<script>
+const SUPABASE_URL = "https://yyyamogspeccbcovwpgc.supabase.co";
+const SUPABASE_KEY = "sb_publishable_A4F3WtMrQ91j2SfD1fEHcw_Un0bpEQQ";
+
+const form = document.getElementById("contestForm");
+const message = document.getElementById("message");
+const button = document.getElementById("submit");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  button.disabled = true;
+  message.textContent = "Enregistrement de ta participation...";
+
+  const data = {
+    p_name: document.getElementById("name").value.trim(),
+    p_email: document.getElementById("email").value.trim(),
+    p_tiktok: document.getElementById("tiktok").value.trim(),
+    p_consent: document.getElementById("consent").checked
+  };
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/rpc/join_contest",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        },
+        body: JSON.stringify(data)
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error);
+    }
+
+    message.textContent = "🎉 Ta participation a bien été enregistrée ! Bonne chance !";
+    form.reset();
+  } catch (error) {
+    console.error(error);
+    message.textContent = "Une erreur est survenue. Vérifie tes informations et réessaie.";
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
 </body>
 </html>
+
