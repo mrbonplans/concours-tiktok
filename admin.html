@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Administration - Concours TikTok</title>
+<style>
+body{background:#0b0b0b;color:white;font-family:Arial;text-align:center;padding:25px}
+main{max-width:450px;margin:40px auto;background:#191919;padding:25px;border:1px solid #c5a45b;border-radius:15px}
+h1,h2{color:#d8b968}
+input{display:block;width:100%;box-sizing:border-box;padding:14px;margin:12px 0;background:#292929;color:white;border:1px solid #777;border-radius:8px}
+button{width:100%;padding:15px;margin-top:12px;background:#d8b968;border:0;border-radius:8px;font-weight:bold;font-size:16px}
+#result{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>CONCOURS TIKTOK</h1>
+<h2>Espace organisateur</h2>
+
+<form id="login">
+<input id="email" type="email" placeholder="Ton adresse e-mail" required>
+<input id="password" type="password" placeholder="Ton mot de passe" required>
+<button type="submit">SE CONNECTER</button>
+</form>
+
+<div id="admin" hidden>
+<p>Connexion réussie.</p>
+<button id="draw">LANCER LE TIRAGE AU SORT</button>
+<button id="logout">SE DÉCONNECTER</button>
+</div>
+
+<p id="result"></p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const db = window.supabase.createClient(
+ "https://yyyamogspeccbcovwpgc.supabase.co",
+ "sb_publishable_A4F3WtMrQ91j2SfD1fEHcw_Un0bpEQQ"
+);
+
+const login = document.getElementById("login");
+const admin = document.getElementById("admin");
+const result = document.getElementById("result");
+
+login.addEventListener("submit", async (e) => {
+ e.preventDefault();
+ result.textContent = "Connexion...";
+ const {error} = await db.auth.signInWithPassword({
+  email: document.getElementById("email").value,
+  password: document.getElementById("password").value
+ });
+ if(error){
+  result.textContent = "Connexion impossible : " + error.message;
+  return;
+ }
+ login.hidden = true;
+ admin.hidden = false;
+ result.textContent = "Tu es connecté à ton espace organisateur.";
+});
+
+document.getElementById("draw").addEventListener("click", async () => {
+ if(!confirm("Attention : veux-tu vraiment lancer le tirage au sort ?")) return;
+ result.textContent = "Tirage en cours...";
+ const {data,error} = await db.rpc("draw_contest_winner");
+ if(error){
+  result.textContent = "Erreur : " + error.message;
+  return;
+ }
+ result.textContent = "Résultat du tirage :\n" + JSON.stringify(data,null,2);
+});
+
+document.getElementById("logout").addEventListener("click", async () => {
+ await db.auth.signOut();
+ admin.hidden = true;
+ login.hidden = false;
+ result.textContent = "Déconnecté.";
+});
+</script>
+</body>
+</html>
